@@ -18,7 +18,7 @@ namespace badgerdb
     int BufHashTbl::hash(const File *file, const PageId pageNo)
     {
         int tmp, value;
-        tmp = (long)file; // cast of pointer to the file object to an integer
+        tmp = (long)(file);  // cast of pointer to the file object to an integer
         value = (tmp + pageNo) % HTSIZE;
         return value;
     }
@@ -45,30 +45,25 @@ namespace badgerdb
         }
         delete[] ht;
     }
-    // 向缓冲区中插入一个页面
     void BufHashTbl::insert(const File *file, const PageId pageNo, const FrameId frameNo)
     {
         int index = hash(file, pageNo);
-
         hashBucket *tmpBuc = ht[index];
-        while (tmpBuc)// 如果已经存在于缓冲区报错
+        while (tmpBuc)
         {
             if (tmpBuc->file == file && tmpBuc->pageNo == pageNo)
                 throw HashAlreadyPresentException(tmpBuc->file->filename(), tmpBuc->pageNo, tmpBuc->frameNo);
             tmpBuc = tmpBuc->next;
         }
-
         tmpBuc = new hashBucket;
         if (!tmpBuc)
             throw HashTableException();
-        // 对于哈希值相同的插入到链表中
         tmpBuc->file = (File *)file;
         tmpBuc->pageNo = pageNo;
         tmpBuc->frameNo = frameNo;
         tmpBuc->next = ht[index];
         ht[index] = tmpBuc;
     }
-    // 查找文件和页面是否存在于缓冲区中，如果在，将帧编号返回
     void BufHashTbl::lookup(const File *file, const PageId pageNo, FrameId &frameNo)
     {
         int index = hash(file, pageNo);
@@ -92,7 +87,6 @@ namespace badgerdb
         int index = hash(file, pageNo);
         hashBucket *tmpBuc = ht[index];
         hashBucket *prevBuc = NULL;
-
         while (tmpBuc)
         {
             if (tmpBuc->file == file && tmpBuc->pageNo == pageNo)
@@ -101,7 +95,6 @@ namespace badgerdb
                     prevBuc->next = tmpBuc->next;
                 else
                     ht[index] = tmpBuc->next;
-
                 delete tmpBuc;
                 return;
             }

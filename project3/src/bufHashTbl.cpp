@@ -18,12 +18,15 @@ namespace badgerdb
 int BufHashTbl::hash(const File *file, const PageId pageNo)
 {
     int tmp, value;
-    tmp = (long)file; // cast of pointer to the file object to an integer
+    std::string s = file->filename();
+    std::hash<std::string> hash_fn;
+    size_t hash = hash_fn(s);
+    tmp = hash; // cast of pointer to the file object to an integer
     value = (tmp + pageNo) % HTSIZE;
     return value;
 }
 
-BufHashTbl::BufHashTbl(int htSize) : HTSIZE(htSize)
+BufHashTbl::BufHashTbl(const int htSize) : HTSIZE(htSize)
 {
     // allocate an array of pointers to hashBuckets
     ht = new hashBucket *[htSize];

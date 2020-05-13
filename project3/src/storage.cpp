@@ -5,6 +5,16 @@
  */
 
 #include "storage.h"
+#include "file_iterator.h"
+#include "page_iterator.h"
+#include <iostream>
+#include <string>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sstream>
+#include "exceptions/insufficient_space_exception.h"
+#include "exceptions/page_not_pinned_exception.h"
 
 using namespace std;
 
@@ -13,12 +23,36 @@ namespace badgerdb
 
 RecordId HeapFileManager::insertTuple(const string &tuple, File &file, BufMgr *bufMgr)
 {
-    PageId pageId;
-    Page *page;
-    RecordId rid;
-    bufMgr->allocPage(&file, pageId, page);
-    rid = page->insertRecord(tuple);
-    bufMgr->unPinPage(&file, pageId, true);
+    Page *nowBufPage;
+    PageId nowPageId;
+    Page nowPage;
+    RecordId recordId;
+    FileIterator iter = file.begin();
+    while ( iter != file.end())
+    {
+        nowPage = *iter;
+        nowPageId = nowPage.page_number();
+        if(nowPageId == Page::INVALID_NUMBER) break;
+        bufMgr->readPage(&file, nowPageId, nowBufPage);
+        try
+        {
+            recordId = nowBufPage->insertRecord(tuple);
+            bufMgr->unPinPage(&file, nowPageId, true);
+            return recordId;
+        }
+        catch (PageNotPinnedException&)
+        {
+        }
+        catch(InsufficientSpaceException&)
+        {
+            bufMgr->unPinPage(&file, nowPageId, false);
+        }
+        ++iter;
+    }
+    bufMgr->allocPage(&file, nowPageId, nowBufPage);
+    recordId = nowBufPage->insertRecord(tuple);
+    bufMgr->unPinPage(&file, nowPageId, true);
+  return recordId;
 }
 
 void HeapFileManager::deleteTuple(const RecordId &rid, File &file, BufMgr *bufMgr)
@@ -32,9 +66,8 @@ void HeapFileManager::deleteTuple(const RecordId &rid, File &file, BufMgr *bufMg
 string HeapFileManager::createTupleFromSQLStatement(const string &sql, const Catalog *catalog)
 {
     string tableName = sql.substr(12, 1);
-    bool recordFlag = false;
     string str1, str2;
-    for (int i = 12;;i++)
+    for (size_t i = 12;;i++)
     {
         if (sql[i] == '(')
         {

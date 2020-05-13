@@ -92,7 +92,7 @@ protected:
     /**
    * System catalog
    */
-    const Catalog *catalog;
+    Catalog *catalog;
 
     /**
    * Buffer pool manager
@@ -127,7 +127,7 @@ public:
                  const File &rightTableFile,
                  const TableSchema &leftTableSchema,
                  const TableSchema &rightTableSchema,
-                 const Catalog *catalog,
+                 Catalog *catalog,
                  BufMgr *bufMgr);
 
     /**
@@ -197,7 +197,7 @@ public:
                         const File &rightTableFile,
                         const TableSchema &leftTableSchema,
                         const TableSchema &rightTableSchema,
-                        const Catalog *catalog,
+                        Catalog *catalog,
                         BufMgr *bufMgr)
         : JoinOperator(leftTableFile,
                        rightTableFile,
@@ -208,7 +208,6 @@ public:
     {
         // nothing
     }
-
     /**
    * Destructor
    */
@@ -235,7 +234,7 @@ public:
                            const File &rightTableFile,
                            const TableSchema &leftTableSchema,
                            const TableSchema &rightTableSchema,
-                           const Catalog *catalog,
+                           Catalog *catalog,
                            BufMgr *bufMgr)
         : JoinOperator(leftTableFile,
                        rightTableFile,
@@ -289,7 +288,7 @@ public:
                           const File &rightTableFile,
                           const TableSchema &leftTableSchema,
                           const TableSchema &rightTableSchema,
-                          const Catalog *catalog,
+                          Catalog *catalog,
                           BufMgr *bufMgr)
         : JoinOperator(leftTableFile,
                        rightTableFile,

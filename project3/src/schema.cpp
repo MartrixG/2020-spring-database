@@ -8,7 +8,7 @@
 
 #include <string>
 #include <iostream>
-
+#include <sstream>
 using namespace std;
 
 namespace badgerdb
@@ -23,7 +23,7 @@ TableSchema TableSchema::fromSQLStatement(const string &sql)
     string header = sql.substr(0, 12);
     if (header == "CREATE TABLE" || header == "create table")
     {
-        for (int i = 13; i < sql.size(); i++)
+        for (size_t i = 13; i < sql.size(); i++)
         {
             if (sql[i] == ' ')
             {
@@ -41,7 +41,7 @@ TableSchema TableSchema::fromSQLStatement(const string &sql)
         int maxSize = 0;
         bool isNotNull = false;
         bool isUnique = false;
-        for (int i = 0; i < declare.size() - 1;)
+        for (size_t i = 0; i < declare.size() - 1;)
         {
             if (declare[i] == ',' || declare[i] == ')')
             {
@@ -126,20 +126,29 @@ TableSchema TableSchema::fromSQLStatement(const string &sql)
 
 void TableSchema::print() const
 {
-    cout << tableName;
+    cout << "table name : " << tableName;
     if(isTemp)
     {
-        cout << "Temp";
+        cout << "(Temp)";
     }
     cout << endl;
     vector<Attribute>::const_iterator it;
     for(it = attrs.begin(); it != attrs.end(); it++)
     {
-        cout << it->attrName << " | " << it->attrType;
+        
+        string type;
+        switch(it->attrType)
+        {
+            case INT:type="INT";break;
+            case CHAR:type="CHAR";break;
+            case VARCHAR:type="VARCHAR";break;
+        }
+        cout << it->attrName << " : " << type;
         if(it->maxSize!=0)
         {
             cout << "(" << it->maxSize << ")";
         }
+        cout  << " | ";
         if(it->isNotNull)
         {
             cout << " " << "NOT NULL";

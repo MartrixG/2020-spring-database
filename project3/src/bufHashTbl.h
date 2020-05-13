@@ -49,11 +49,11 @@ private:
     /**
 	 *	Size of Hash Table
 	 */
-    int HTSIZE;
+    const int HTSIZE;
     /**
 	 * Actual Hash table object
 	 */
-    hashBucket **ht; // 指向实际哈希表的指针
+    hashBucket **ht;
 
     /**
 	 * returns hash value between 0 and HTSIZE-1 computed using file and pageNo
@@ -63,6 +63,7 @@ private:
 	 * @return  			Hash value.
 	 */
     int hash(const File *file, const PageId pageNo);
+    int hasher(char *str);
 
 public:
     /**

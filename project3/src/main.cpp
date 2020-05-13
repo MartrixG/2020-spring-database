@@ -53,7 +53,7 @@ void createDatabase(BufMgr *bufMgr, Catalog *catalog)
     {
         stringstream ss;
         ss << "INSERT INTO r VALUES ('r" << i << "', " << (i % rightTableRows) << ");";
-        string tuple =  HeapFileManager::createTupleFromSQLStatement(ss.str(), catalog);
+        string tuple = HeapFileManager::createTupleFromSQLStatement(ss.str(), catalog);
         HeapFileManager::insertTuple(tuple, leftTableFile, bufMgr);
     }
     // INSERT INTO r VALUES ('rxxx', num);
@@ -78,12 +78,11 @@ void testOnePassJoin(BufMgr *bufMgr, Catalog *catalog)
     TableId rightTableId = catalog->getTableId("s");
     TableSchema leftTableSchema = catalog->getTableSchema(leftTableId);
     TableSchema rightTableSchema = catalog->getTableSchema(rightTableId);
+    File leftTableFile = File::open(catalog->getTableFilename(leftTableId));
+    File rightTableFile = File::open(catalog->getTableFilename(rightTableId));
 
     // Create one-pass join operator
-    OnePassJoinOperator joinOperator(
-        File::open(catalog->getTableFilename(leftTableId)),
-        File::open(catalog->getTableFilename(rightTableId)), leftTableSchema,
-        rightTableSchema, catalog, bufMgr);
+    OnePassJoinOperator joinOperator(leftTableFile, rightTableFile, leftTableSchema, rightTableSchema, catalog, bufMgr);
     TableSchema resultSchema = joinOperator.getResultTableSchema();
 
     // Join two tables using one-pass join
@@ -98,6 +97,7 @@ void testOnePassJoin(BufMgr *bufMgr, Catalog *catalog)
     // Print all tuples in result
     TableScanner scanner(resultFile, resultSchema, bufMgr);
     scanner.print();
+    bufMgr->flushFile(&resultFile);
 }
 
 void testNestedLoopJoin(BufMgr *bufMgr, Catalog *catalog)
@@ -106,12 +106,11 @@ void testNestedLoopJoin(BufMgr *bufMgr, Catalog *catalog)
     TableId rightTableId = catalog->getTableId("s");
     TableSchema leftTableSchema = catalog->getTableSchema(leftTableId);
     TableSchema rightTableSchema = catalog->getTableSchema(rightTableId);
+    File leftTableFile = File::open(catalog->getTableFilename(leftTableId));
+    File rightTableFile = File::open(catalog->getTableFilename(rightTableId));
 
     // Create one-pass join operator
-    NestedLoopJoinOperator joinOperator(
-        File::open(catalog->getTableFilename(leftTableId)),
-        File::open(catalog->getTableFilename(rightTableId)), leftTableSchema,
-        rightTableSchema, catalog, bufMgr);
+    NestedLoopJoinOperator joinOperator(leftTableFile, rightTableFile, leftTableSchema, rightTableSchema, catalog, bufMgr);
     TableSchema resultSchema = joinOperator.getResultTableSchema();
 
     // Join two tables using one-pass join
@@ -126,6 +125,7 @@ void testNestedLoopJoin(BufMgr *bufMgr, Catalog *catalog)
     // Print all tuples in result
     TableScanner scanner(resultFile, resultSchema, bufMgr);
     scanner.print();
+    bufMgr->flushFile(&resultFile);
 }
 
 int main()
@@ -146,13 +146,13 @@ int main()
 
     // Test nested-loop join operator
     cout << "Test Nested-Loop Join ..." << endl;
-    testOnePassJoin(bufMgr, catalog);
+    testNestedLoopJoin(bufMgr, catalog);
 
     // Destroy objects
     delete bufMgr;
     delete catalog;
 
     cout << "Test Completed" << endl;
-
+    system("pause");
     return 0;
 }

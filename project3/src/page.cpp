@@ -34,8 +34,8 @@ RecordId Page::insertRecord(const std::string &record_data)
 {
 	if (!hasSpaceForRecord(record_data))
 	{
-		throw InsufficientSpaceException(page_number(), record_data.length(),
-										 getFreeSpace());
+		throw InsufficientSpaceException(
+			page_number(), record_data.length(), getFreeSpace());
 	}
 	const SlotId slot_number = getAvailableSlot(); //获取可以实际使用的slot编号
 	insertRecordInSlot(slot_number, record_data);
@@ -159,8 +159,8 @@ PageSlot *Page::getSlot(const SlotId slot_number) //返回了指针，由于是�
 
 const PageSlot &Page::getSlot(const SlotId slot_number) const //return 后的*取了指针的内容，并且返回了引用，所以用const修饰
 {
-	return *reinterpret_cast<const PageSlot *>(
-		&data_[(slot_number - 1) * sizeof(PageSlot)]);
+
+	return *reinterpret_cast<const PageSlot *>(&data_[(slot_number - 1) * sizeof(PageSlot)]);
 }
 
 SlotId Page::getAvailableSlot()
